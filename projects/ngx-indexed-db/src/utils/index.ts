@@ -43,3 +43,14 @@ export function optionsGenerator(
     },
   };
 }
+
+type Modify<T, R> = Omit<T, keyof R> & R;
+
+export type NgxIDBCursorWithValue<V, P extends IDBValidKey = any, K extends IDBValidKey = any> = Modify<NgxIDBCursor<P, K>, {
+  value : V;
+}>;
+
+export type NgxIDBCursor<P extends IDBValidKey, K extends IDBValidKey> = Modify<IDBCursor, {
+  primaryKey : P | undefined;
+  key : K | undefined;
+}>
