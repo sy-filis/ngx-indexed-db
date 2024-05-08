@@ -77,6 +77,22 @@ export class NgxIndexedDBService {
   }
 
   /**
+   * The function return the current version of database
+   *
+   * @Return the current version of database as number
+   */
+  getDatabaseVersion(): Observable<number | string> {
+    return new Observable(obs => {
+      openDatabase(this.indexedDB, this.dbConfig.name, this.dbConfig.version)
+        .then((db: IDBDatabase) => {
+          obs.next(db.version);
+          obs.complete();
+        })
+        .catch(err => obs.error(`error during get version of database => ${err} `));
+    });
+  }
+
+  /**
    * Selects a database for the current context.
    * @param {string} [databaseName=undefined] Database name to select.
    */
@@ -362,7 +378,7 @@ export class NgxIndexedDBService {
   /**
    * Adds or updates a record in store with the given value and key. Return all items present in the store
    * @param storeName The name of the store to update
-   * @param items The values to insert in the DB
+   * @param items The values to update in the DB
    *
    * @Return The return value is an Observable with the primary key of the object that was last in given array
    *
@@ -545,7 +561,7 @@ export class NgxIndexedDBService {
     indexName: string,
     query: IDBValidKey | IDBKeyRange | null = null,
     direction: IDBCursorDirection = 'next',
-    mode: DBMode = DBMode.readonly,
+    mode: DBMode = DBMode.readonly
   ): Observable<NgxIDBCursorWithValue<T>> {
     return new Observable((obs) => {
       openDatabase(this.indexedDB, this.dbConfig.name, this.dbConfig.version)
