@@ -13,14 +13,13 @@ import {
   NgxIDBCursor,
   NgxIDBCursorWithValue,
   ObjectStoreMeta,
-  RequestEvent,
   WithID,
 } from './ngx-indexed-db.meta';
 
 @Injectable()
 export class NgxIndexedDBService {
-  private defaultDatabaseName?: string = null;
-  private selectedDb: string;
+  private defaultDatabaseName: string | null = null;
+  private selectedDb!: string;
 
   constructor(
     @Inject(CONFIG_TOKEN) private dbConfigs: Record<string, DBConfig>,
@@ -96,17 +95,17 @@ export class NgxIndexedDBService {
    * @param {string} [databaseName=undefined] Database name to select.
    */
   public selectDb(databaseName?: string): void {
-    databaseName = databaseName ?? this.defaultDatabaseName;
-    if (!databaseName) {
+    const dbName = databaseName ?? this.defaultDatabaseName;
+    if (!dbName) {
       // Name is still null, it means that there is no default database set
       // and the database name was not specified while calling a method
       throw new Error(`No database name specified and no default database set.`);
     }
-    if (!Object.keys(this.dbConfigs).includes(databaseName)) {
-      throw new Error(`NgxIndexedDB: Database ${databaseName} is not initialized.`);
+    if (!Object.keys(this.dbConfigs).includes(dbName)) {
+      throw new Error(`NgxIndexedDB: Database ${dbName} is not initialized.`);
     }
 
-    this.selectedDb = databaseName;
+    this.selectedDb = dbName;
   }
 
   /**
@@ -122,7 +121,7 @@ export class NgxIndexedDBService {
     await CreateObjectStore(
       this.indexedDB,
       this.dbConfig.name,
-      ++this.dbConfig.version,
+      ++this.dbConfig.version!,
       storeSchemas,
       migrationFactory
     );
@@ -355,8 +354,8 @@ export class NgxIndexedDBService {
             obs.error(evt);
           };
 
-          request.onsuccess = ({ target: { result: ResultAll } }: RequestEvent<T>) => {
-            obs.next(ResultAll as T[]);
+          request.onsuccess = (event: Event) => {
+            obs.next((event.target as IDBRequest<T[]>).result);
             obs.complete();
           };
         })
@@ -818,7 +817,7 @@ export class NgxIndexedDBService {
    * @param storeName The name of the store to query
    */
   deleteObjectStore(storeName: string): Observable<void> {
-    return DeleteObjectStore(this.dbConfig.name, ++this.dbConfig.version, storeName);
+    return DeleteObjectStore(this.dbConfig.name, ++this.dbConfig.version!, storeName);
   }
 
   /**
