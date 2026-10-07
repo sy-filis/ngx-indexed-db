@@ -65,7 +65,7 @@ export async function CreateObjectStore(
           .sort((a, b) => a - b);
 
         for (const v of migrationKeys) {
-          storeMigrations[v](database, request.transaction!);
+          storeMigrations[v]?.(database, request.transaction!);
         }
       }
 
