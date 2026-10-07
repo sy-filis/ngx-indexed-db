@@ -23,7 +23,7 @@
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "target": "ES2022",
+    "target": "ES2025",
     "module": "preserve",
     "moduleResolution": "bundler",
     "paths": {
