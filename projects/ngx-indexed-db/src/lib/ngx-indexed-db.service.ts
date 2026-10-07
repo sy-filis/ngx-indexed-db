@@ -1,4 +1,4 @@
-import { Inject, Injectable, isDevMode } from '@angular/core';
+import { inject, Injectable, isDevMode } from '@angular/core';
 import { Observable, combineLatest, from } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { createTransaction, optionsGenerator, validateBeforeTransaction } from '../utils';
@@ -18,13 +18,12 @@ import {
 
 @Injectable()
 export class NgxIndexedDBService {
+  private readonly dbConfigs = inject(CONFIG_TOKEN);
+  private readonly indexedDB = inject(INDEXED_DB);
   private defaultDatabaseName: string | null = null;
   private selectedDb!: string;
 
-  constructor(
-    @Inject(CONFIG_TOKEN) private dbConfigs: Record<string, DBConfig>,
-    @Inject(INDEXED_DB) private indexedDB: IDBFactory
-  ) {
+  constructor() {
     Object.values(this.dbConfigs).forEach((dbConfig, _, ref) => this.instanciateConfig(dbConfig, ref.length === 1));
   }
 
