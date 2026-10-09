@@ -80,6 +80,20 @@ export class NgxIndexedDBService {
   }
 
   /**
+   * Increments the version of the selected database, as needed for a schema change, and returns it.
+   */
+  private nextDbVersion(): number {
+    const config = this.dbConfig;
+    if (config.version === undefined) {
+      // The version is only known once it is configured or the database has been opened
+      throw new Error(
+        `NgxIndexedDB: The version of database ${config.name} is unknown. Provide it in the configuration or wait until the database is initialized.`
+      );
+    }
+    return ++config.version;
+  }
+
+  /**
    * The function return the current version of database
    *
    * @Return the current version of database as number
@@ -127,7 +141,7 @@ export class NgxIndexedDBService {
     await CreateObjectStore(
       this.indexedDB,
       this.dbConfig.name,
-      ++this.dbConfig.version!,
+      this.nextDbVersion(),
       storeSchemas,
       migrationFactory
     );
@@ -823,7 +837,7 @@ export class NgxIndexedDBService {
    * @param storeName The name of the store to query
    */
   deleteObjectStore(storeName: string): Observable<void> {
-    return DeleteObjectStore(this.dbConfig.name, ++this.dbConfig.version!, storeName);
+    return DeleteObjectStore(this.dbConfig.name, this.nextDbVersion(), storeName);
   }
 
   /**

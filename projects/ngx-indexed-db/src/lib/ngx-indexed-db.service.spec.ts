@@ -118,4 +118,24 @@ describe('NgxIndexedDBService', () => {
       expect(await firstValueFrom(service.getAllObjectStoreNames())).toEqual(['people']);
     });
   });
+
+  describe('without a configured version', () => {
+    let service: NgxIndexedDBService;
+
+    beforeEach(() => {
+      const config = createDbConfig();
+      delete config.version;
+      TestBed.configureTestingModule({
+        providers: [provideIndexedDb(config)],
+      });
+      service = TestBed.inject(NgxIndexedDBService);
+    });
+
+    it('should refuse a schema change while the version is still unknown', async () => {
+      const storeSchema = { store: 'pets', storeConfig: { keyPath: 'id', autoIncrement: true }, storeSchema: [] };
+
+      await expect(service.createObjectStore(storeSchema)).rejects.toThrow(/version of database .* is unknown/);
+      expect(() => service.deleteObjectStore('people')).toThrow(/version of database .* is unknown/);
+    });
+  });
 });
